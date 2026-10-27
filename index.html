@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guarujá Hostel — Sistema de Orçamentos</title>
+  <style>
+    :root {
+      /* Light Theme - Clean SaaS Precision */
+      --bg-app: #f4f5f7;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f8fafc;
+      --bg-input: #ffffff;
+      --border: #e2e8f0;
+      --border-focus: #0284c7;
+      
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --accent-soft: #e0f2fe;
+      --accent-text: #0369a1;
+      
+      --success: #059669;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
+      
+      --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 10px;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Theme - Linear / Raycast Precision */
+      --bg-app: #090d16;
+      --bg-surface: #111827;
+      --bg-subtle: #1e293b;
+      --bg-input: #0f172a;
+      --border: #1f2937;
+      --border-focus: #38bdf8;
+      
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      --accent: #0284c7;
+      --accent-hover: #0ea5e9;
+      --accent-soft: rgba(14, 165, 233, 0.15);
+      --accent-text: #38bdf8;
+      
+      --success: #10b981;
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.15);
+      
+      --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      font-size: 13.5px;
+      line-height: 1.4;
+    }
+
+    svg.icon {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      stroke-width: 1.85;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      flex-shrink: 0;
+    }
+
+    #app-shell {
+      width: 100%;
+      max-width: 680px;
+      min-height: 100vh;
+      background: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+
+    /* TOPBAR */
+    .topbar {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-logo {
+      width: 28px; height: 28px; border-radius: var(--radius-sm);
+      background: var(--accent); color: #fff; display: flex;
+      align-items: center; justify-content: center; font-weight: 700; font-size: 13px;
+    }
+    .brand-text h1 { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .brand-text span { font-size: 11px; color: var(--text-muted); display: block; }
+
+    /* NAVIGATION TABS */
+    .nav-bar {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 18px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav-tab {
+      background: none; border: none; padding: 11px 2px; font-size: 13px;
+      font-weight: 500; color: var(--text-secondary); cursor: pointer;
+      border-bottom: 2px solid transparent; display: flex; align-items: center;
+      gap: 6px; transition: all 0.15s;
+    }
+    .nav-tab:hover { color: var(--text-primary); }
+    .nav-tab.active { color: var(--accent-text); border-bottom-color: var(--accent); font-weight: 600; }
+
+    .viewport { padding: 16px 18px 32px; flex: 1; display: none; }
+    .viewport.active { display: block; }
+
+    /* PANELS */
+    .panel {
+      background: var(--bg-surface); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 12px;
+      box-shadow: var(--shadow-xs);
+    }
+    .panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .panel-title {
+      font-size: 12.5px; font-weight: 600; color: var(--text-primary);
+      display: flex; align-items: center; gap: 7px; text-transform: uppercase;
+    }
+    .panel-title svg { color: var(--accent-text); }
+
+    /* FORMS */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .field { margin-bottom: 10px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 11.5px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px;
+    }
+    .field-hint { font-size: 11px; color: var(--accent-text); font-weight: 500; }
+
+    input, textarea, select {
+      width: 100%; padding: 7px 10px; font-size: 13px; color: var(--text-primary);
+      background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); outline: none; transition: all 0.15s;
+    }
+    input:focus, textarea:focus { border-color: var(--border-focus); box-shadow: 0 0 0 2px var(--accent-soft); }
+    textarea { resize: vertical; line-height: 1.45; }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 12px; font-size: 12.5px; font-weight: 500; border-radius: var(--radius-sm);
+      border: 1px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-primary { background: var(--accent); color: #ffffff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--bg-subtle); color: var(--text-primary); border-color: var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-ghost { background: transparent; color: var(--text-secondary); padding: 4px 8px; font-size: 11.5px; }
+    .btn-ghost:hover { background: var(--bg-subtle); color: var(--text-primary); }
+    .btn-danger-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 6px; }
+    .btn-danger-ghost:hover { background: var(--danger-soft); color: var(--danger); border-color: transparent; }
+    .btn-block { width: 100%; }
+
+    /* SEGMENTED CONTROL */
+    .segmented {
+      display: inline-flex; background: var(--bg-subtle); padding: 2px;
+      border-radius: var(--radius-sm); border: 1px solid var(--border);
+    }
+    .segmented button {
+      border: none; background: transparent; padding: 4px 10px; font-size: 11.5px;
+      font-weight: 500; color: var(--text-secondary); border-radius: 4px; cursor: pointer; transition: all 0.15s;
+    }
+    .segmented button.active {
+      background: var(--bg-surface); color: var(--text-primary);
+      box-shadow: var(--shadow-xs); font-weight: 600;
+    }
+
+    /* ROOM LIST */
+    .room-grid { display: flex; flex-direction: column; gap: 6px; }
+    .room-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 10px; background: var(--bg-subtle); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); gap: 8px;
+    }
+    .room-item-name { font-size: 13px; font-weight: 500; color: var(--text-primary); flex: 1; }
+    .price-input-wrap {
+      display: flex; align-items: center; background: var(--bg-input);
+      border: 1px solid var(--border); border-radius: var(--radius-sm); padding-left: 8px; width: 120px;
+    }
+    .price-input-wrap span { font-size: 11.5px; color: var(--text-muted); font-weight: 500; }
+    .price-input-wrap input { border: none; background: transparent; padding: 5px 8px 5px 4px; font-weight: 600; text-align: right; }
+
+    /* STATUS BAR / PILLS */
+    .status-strip {
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--accent-soft); color: var(--accent-text); padding: 8px 12px;
+      border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; margin-top: 10px;
+    }
+    .badge {
+      display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px;
+      font-size: 11px; font-weight: 600; background: var(--bg-subtle); color: var(--text-secondary); border: 1px solid var(--border);
+    }
+    .badge-accent { background: var(--accent-soft); color: var(--accent-text); border-color: transparent; }
+
+    /* WHATSAPP PREVIEW (Renderizado) */
+    .wa-preview-box {
+      background: var(--bg-subtle); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 14px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; color: var(--text-primary);
+    }
+    .wa-preview-box strong { font-weight: 700; color: var(--text-primary); }
+    .wa-preview-box em { font-style: italic; }
+    .wa-preview-box del { text-decoration: line-through; opacity: 0.7; }
+    .wa-preview-box code { font-family: monospace; background: var(--border); padding: 2px 4px; border-radius: 4px; }
+
+    /* RECORDS LIST (Orçamentos & Clientes) */
+    .record-card {
+      background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 12px 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; transition: border-color 0.15s;
+    }
+    .record-card:hover { border-color: var(--text-muted); }
+    .record-info {
+      flex: 1; cursor: pointer; border-radius: 4px; padding: 2px;
+    }
+    .record-info:hover h4 { color: var(--accent-text); }
+    .record-info h4 { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; display: flex; align-items: center; gap: 8px; transition: color 0.15s; }
+    .record-meta { font-size: 12px; color: var(--text-secondary); display: flex; flex-wrap: wrap; gap: 10px; }
+    .record-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+    /* MODAL */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(9, 13, 22, 0.6); backdrop-filter: blur(2px);
+      display: flex; align-items: center; justify-content: center; z-index: 100;
+      opacity: 0; pointer-events: none; transition: opacity 0.15s;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+    .modal-dialog {
+      background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+      width: 92%; max-width: 480px; padding: 18px; box-shadow: var(--shadow-sm);
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(10px);
+      background: var(--text-primary); color: var(--bg-surface); padding: 8px 16px;
+      border-radius: 999px; font-size: 12.5px; font-weight: 500; box-shadow: var(--shadow-sm);
+      opacity: 0; pointer-events: none; transition: all 0.2s; z-index: 200;
+    }
+    .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+  <div id="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">GH</div>
+        <div class="brand-text">
+          <h1>Guarujá Hostel</h1>
+          <span>Central de Orçamentos de Grupos</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button class="btn btn-secondary" onclick="openChangelogModal()" title="Ver Changelog & Instruções">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span style="font-size: 11px; font-weight: 700;">v1.0</span>
+        </button>
+        <button class="btn btn-secondary" onclick="toggleTheme()" id="themeBtn">
+          <svg class="icon" id="themeIcon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <span id="themeLabel">Escuro</span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="nav-bar">
+      <button class="nav-tab active" data-tab="gerador" onclick="switchTab('gerador')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Gerador
+      </button>
+      <button class="nav-tab" data-tab="orcamentos" onclick="switchTab('orcamentos')">
+        <svg class="icon" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Orçamentos
+      </button>
+      <button class="nav-tab" data-tab="clientes" onclick="switchTab('clientes')">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clientes
+      </button>
+      <button class="nav-tab" data-tab="configuracoes" onclick="switchTab('configuracoes')">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Configurações
+      </button>
+    </nav>
+
+    <!-- ABA 1: GERADOR -->
+    <main id="tab-gerador" class="viewport active">
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg class="icon" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Interpretador Inteligente de Ficha
+          </div>
+          <button class="btn btn-ghost" onclick="newBlankOrcamento()">Novo / Limpar</button>
+        </div>
+        <textarea id="rawInput" rows="3" placeholder="Cole a mensagem do hóspede aqui..."></textarea>
+        <button class="btn btn-primary btn-block" style="margin-top: 10px;" onclick="parseSmartInput()">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Extrair Dados da Mensagem
+        </button>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Dados do Solicitante
+          </div>
+          <span id="currentOrcId" class="badge badge-accent">#NOVO</span>
+        </div>
+        <div class="field">
+          <label>Nome Completo</label>
+          <input type="text" id="guestName">
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>Telefone / WhatsApp</label>
+            <input type="text" id="guestPhone">
+          </div>
+          <div class="field">
+            <label>Cidade / UF</label>
+            <input type="text" id="guestCity">
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label>E-mail</label>
+            <input type="text" id="guestEmail">
+          </div>
+          <div class="field">
+            <label>
+              <span>Total de Hóspedes</span>
+              <span id="paxBreakdown" class="field-hint"></span>
+            </label>
+            <input type="number" id="guestCount">
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Período e Cálculo de Diárias
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Check-in (Data)</label><input type="date" id="checkinDate" onchange="calculateStay()"></div>
+          <div class="field"><label>Horário de Chegada</label><input type="time" id="checkinTime" value="14:00" onchange="calculateStay()"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Check-out (Data)</label><input type="date" id="checkoutDate" onchange="calculateStay()"></div>
+          <div class="field"><label>Horário de Saída</label><input type="time" id="checkoutTime" value="12:00" onchange="calculateStay()"></div>
+        </div>
+        <div class="status-strip" id="staySummary"><span>Calculando período...</span></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Tarifário & Validade
+          </div>
+          <div class="segmented">
+            <button type="button" id="modePessoa" class="active" onclick="setPricingMode('pessoa')">Por Pessoa</button>
+            <button type="button" id="modeQuarto" onclick="setPricingMode('quarto')">Por Quarto</button>
+          </div>
+        </div>
+        <div id="roomsPriceList" class="room-grid"></div>
+        <div class="field" style="margin-top: 12px;">
+          <label>Validade do Orçamento</label>
+          <input type="text" id="validityDate" placeholder="Ex: 30 de outubro de 2026">
+        </div>
+      </section>
+
+      <div class="grid-2" style="margin-bottom: 14px;">
+        <button class="btn btn-secondary" style="padding: 11px;" onclick="copyPresentation()">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          1. Copiar Apresentação
+        </button>
+        <button class="btn btn-primary" style="padding: 11px;" onclick="copyAndSave()">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+          2. Copiar & Salvar Orçamento
+        </button>
+      </div>
+
+      <section class="panel" style="margin-bottom: 0;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            Pré-visualização do WhatsApp
+          </div>
+        </div>
+        <div class="wa-preview-box" id="markdownPreview"></div>
+      </section>
+    </main>
+
+    <!-- ABA 2: ORÇAMENTOS -->
+    <main id="tab-orcamentos" class="viewport">
+      <div class="field" style="margin-bottom: 14px;">
+        <input type="text" id="searchOrc" placeholder="Pesquisar por código (#ORC), nome, cidade ou telefone..." oninput="renderOrcamentosList()">
+      </div>
+      <div id="orcamentosList"></div>
+    </main>
+
+    <!-- ABA 3: CLIENTES -->
+    <main id="tab-clientes" class="viewport">
+      <div style="display:flex; gap:10px; margin-bottom: 14px;">
+        <input type="text" id="searchClient" placeholder="Filtrar clientes..." oninput="renderClientesList()">
+        <button class="btn btn-secondary" onclick="exportClientsCSV()">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar Todos CSV
+        </button>
+      </div>
+      <div id="clientesList"></div>
+    </main>
+
+    <!-- ABA 4: CONFIGURAÇÕES -->
+    <main id="tab-configuracoes" class="viewport">
+      <section class="panel">
+        <div class="panel-header"><div class="panel-title">Categorias de Acomodação</div></div>
+        <div id="configRoomsList" class="room-grid"></div>
+        <div class="grid-3" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);">
+          <input type="text" id="newRoomName" placeholder="Categoria">
+          <input type="number" id="newRoomDefaultPrice" placeholder="R$ Padrão" step="0.01">
+          <button class="btn btn-primary" onclick="addNewRoomCategory()">Adicionar</button>
+        </div>
+      </section>
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Mensagem de Apresentação</div>
+          <button class="btn btn-secondary" onclick="savePresentationConfig()">Salvar</button>
+        </div>
+        <textarea id="presentationTextConfig" rows="7"></textarea>
+      </section>
+      <section class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Aviso de Estacionamento</div>
+          <button class="btn btn-secondary" onclick="saveParkingConfig()">Salvar</button>
+        </div>
+        <textarea id="parkingTextConfig" rows="3"></textarea>
+      </section>
+      <section class="panel">
+        <div class="panel-header"><div class="panel-title">Backup Local (JSON)</div></div>
+        <div class="grid-2">
+          <button class="btn btn-secondary" onclick="exportDataBackup()">Exportar Backup</button>
+          <button class="btn btn-secondary" onclick="document.getElementById('importFileInput').click()">Restaurar Backup</button>
+        </div>
+        <input type="file" id="importFileInput" style="display: none;" accept=".json" onchange="importDataBackup(event)">
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL EDITAR CLIENTE -->
+  <div id="clientEditModal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="panel-header"><div class="panel-title">Editar Cliente</div></div>
+      <input type="hidden" id="editClientOldPhone">
+      <div class="field"><label>Nome Completo</label><input type="text" id="editClientName"></div>
+      <div class="field"><label>Telefone / WhatsApp</label><input type="text" id="editClientPhone"></div>
+      <div class="field"><label>Cidade / UF</label><input type="text" id="editClientCity"></div>
+      <div class="field"><label>E-mail</label><input type="text" id="editClientEmail"></div>
+      <div class="grid-2" style="margin-top: 16px;">
+        <button class="btn btn-secondary" onclick="closeClientModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveClientEdit()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL VISUALIZAR ORÇAMENTO (RENDERIZADO) -->
+  <div id="previewOrcModal" class="modal-backdrop">
+    <div class="modal-dialog" style="max-width: 520px;">
+      <div class="panel-header">
+        <div class="panel-title" id="previewOrcModalTitle">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Visualização do Orçamento
+        </div>
+        <button class="btn btn-ghost" style="padding: 4px;" onclick="closePreviewOrcModal()">✕</button>
+      </div>
+      <div class="wa-preview-box" id="previewOrcModalContent" style="max-height: 55vh; overflow-y: auto; margin-bottom: 16px; background: var(--bg-surface);"></div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+        <button class="btn btn-secondary" onclick="closePreviewOrcModal()">Fechar</button>
+        <button class="btn btn-secondary" id="previewOrcPrintBtn">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Salvar PDF
+        </button>
+        <button class="btn btn-primary" id="previewOrcCopyBtn">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copiar Whats
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CHANGELOG / INSTRUÇÕES -->
+  <div id="changelogModal" class="modal-backdrop">
+    <div class="modal-dialog" style="max-width: 550px;">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Changelog & Orientações
+        </div>
+        <button class="btn btn-ghost" style="padding: 4px;" onclick="closeChangelogModal()">✕</button>
+      </div>
+      <div class="wa-preview-box" style="max-height: 60vh; overflow-y: auto; margin-bottom: 16px; background: var(--bg-surface);">
+        <h3 style="color: var(--accent-text); margin-bottom: 12px; font-size: 15px;">🚀 Versão 1.0 (Lançamento Oficial)</h3>
+        <ul style="padding-left: 18px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 18px;">
+          <li style="margin-bottom: 6px;"><strong>Super Parser Heurístico:</strong> Extração automática de dados de textos não padronizados. Identifica nome, telefone, cidade, datas, horários e soma inteligemente guias/motoristas ao total de hóspedes.</li>
+          <li style="margin-bottom: 6px;"><strong>Cálculo Automático de Diárias:</strong> Identificação e cálculo de Early Check-in (07h) e Late Check-out (18h) contabilizando meias diárias perfeitamente (ex: 2,5 diárias).</li>
+          <li style="margin-bottom: 6px;"><strong>Renderização Visual WhatsApp:</strong> Prévia rica transformando markdown (*negrito*, _itálico_) para visualização real em todas as etapas.</li>
+          <li style="margin-bottom: 6px;"><strong>Geração de PDF Profissional:</strong> Impressão nativa em formato A4, limpo e profissional, ideal para enviar como anexo ou arquivar.</li>
+          <li style="margin-bottom: 6px;"><strong>Gestão de Clientes Avançada:</strong> Histórico atrelado ao número do WhatsApp, edição de dados, exclusão rápida e exportação CSV universal (com suporte a acentuação em Excel).</li>
+          <li style="margin-bottom: 6px;"><strong>Design System SaaS Moderno:</strong> Interface limpa "Cloudbeds-style", navegação fluida por abas e Modo Escuro nativo.</li>
+          <li style="margin-bottom: 6px;"><strong>100% Offline (Sem Mensalidades):</strong> Armazenamento via LocalStorage. Os dados ficam no seu navegador com opção de Backup manual via arquivo JSON.</li>
+        </ul>
+        <h4 style="color: var(--text-primary); margin-bottom: 6px; font-size: 13.5px;">📌 Como realizar atualizações futuras</h4>
+        <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">
+          Como a ferramenta salva tudo no <code>LocalStorage</code> do navegador atual, sempre que for baixar uma nova versão atualizada do arquivo <code>.html</code>, recomenda-se:
+          <br>1. Ir em Configurações > Exportar Backup (Salvar o JSON).
+          <br>2. Abrir o novo arquivo <code>.html</code> no navegador.
+          <br>3. Ir em Configurações > Restaurar Backup (Selecionar o JSON).
+        </p>
+      </div>
+      <div style="display: flex; justify-content: flex-end;">
+        <button class="btn btn-primary" onclick="closeChangelogModal()">Entendi, fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Copiado!</div>
+
+  <script>
+    const DEFAULT_CONFIG = {
+      presentationText: `🏖️ *Sobre o Guarujá Hostel:*\nEstamos localizados na Praia da Enseada, uma das 27 belas praias da cidade, com 15 anos de história em oferecer conforto e hospitalidade.\n\n*Serviços incluídos na estadia:*\n- Café da manhã completo (buffet);\n- Recepção 24h e Wi-Fi de alta velocidade;\n- Quartos suítes;\n- Piscina adulto/infantil, churrasqueira e mesa de bilhar;\n- Bar com drinks e porções (consulte a disponibilidade);\n- Cozinha equipada disponível para uso dos hóspedes;\n- Sala de TV, jardins e deck.\n\n*Parcerias e atividades opcionais:*\n🚤 _Passeios de escuna:_ Descontos para grupos com a Escuna Mestre dos Mares (site: www.escunamestredosmares.com.br).\n🌄 _Turismo radical:_ Trilha e rapel no Morro do Maluf com Guarujá Radical (@guarujaradical).\n🐠 _Acqua Mundo:_ Atração imperdível a poucos passos, com 20% de desconto para nossos hóspedes!\n\n*Autorização de ônibus/van:*\nCuidamos da autorização de entrada na cidade (gratuito). Basta enviar os documentos necessários até 15 dias antes.\n\n*Datas, quartos e valores:*\nOs valores dependem das datas e número de pessoas informados. Qualquer alteração poderá reajustar o orçamento.`,
+      parkingText: "🚗 _O estacionamento na região é terceirizado e de responsabilidade do contratante, mas ficamos à disposição para indicar opções próximas e seguras._",
+      rooms: [
+        { id: "casal", name: "Casal", defaultPrice: 169.00 },
+        { id: "triplo", name: "Triplo", defaultPrice: 149.00 },
+        { id: "quadruplo", name: "Quádruplo", defaultPrice: 146.00 },
+        { id: "quintuplo", name: "Quíntuplo", defaultPrice: 132.00 },
+        { id: "sextuplo", name: "Sêxtuplo", defaultPrice: 132.00 }
+      ]
+    };
+
+    let appData = {
+      config: JSON.parse(localStorage.getItem('orc_config')) || DEFAULT_CONFIG,
+      orcamentos: JSON.parse(localStorage.getItem('orc_orcamentos')) || [],
+      clientes: JSON.parse(localStorage.getItem('orc_clientes')) || {},
+      nextSeq: parseInt(localStorage.getItem('orc_next_seq') || '1')
+    };
+
+    if (!appData.config.presentationText) appData.config.presentationText = DEFAULT_CONFIG.presentationText;
+
+    let pricingMode = 'pessoa';
+    let activeOrcamentoId = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initRoomsPriceList(); initDates(); renderConfigRooms();
+      document.getElementById('parkingTextConfig').value = appData.config.parkingText;
+      document.getElementById('presentationTextConfig').value = appData.config.presentationText;
+      document.getElementById('validityDate').value = '30 de outubro de 2026';
+      updatePreview();
+      ['guestName', 'guestPhone', 'guestCity', 'guestEmail', 'guestCount', 'validityDate'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+          if (id === 'guestCount') document.getElementById('paxBreakdown').innerText = '';
+          updatePreview();
+        });
+      });
+    });
+
+    function renderWhatsAppMarkdown(text) {
+      if (!text) return '';
+      return text
+        .replace(/```([^`]+)```/g, '<code>$1</code>')
+        .replace(/\*([^\*]+)\*/g, '<strong>$1</strong>')
+        .replace(/_([^_]+)_/g, '<em>$1</em>')
+        .replace(/~([^~]+)~/g, '<del>$1</del>')
+        .replace(/\n/g, '<br>');
+    }
+
+    function newBlankOrcamento() {
+      activeOrcamentoId = null;
+      document.getElementById('currentOrcId').innerText = '#NOVO';
+      document.getElementById('rawInput').value = '';
+      document.getElementById('guestName').value = '';
+      document.getElementById('guestPhone').value = '';
+      document.getElementById('guestCity').value = '';
+      document.getElementById('guestEmail').value = 'não informou';
+      document.getElementById('guestCount').value = '';
+      document.getElementById('paxBreakdown').innerText = '';
+      initDates(); updatePreview(); showToast('Formulário limpo');
+    }
+    
+    function toTitleCase(str) {
+      if (!str) return '';
+      const lowers = ['de', 'da', 'do', 'das', 'dos', 'e'];
+      return str.toLowerCase().split(/\s+/).map((w, i) => (i > 0 && lowers.includes(w)) ? w : w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+    function formatBrazilPhone(d) {
+      d = d.replace(/\D/g, '');
+      if (d.startsWith('55') && d.length >= 12) d = d.slice(2);
+      if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+      if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+      return d;
+    }
+    function formatCityName(raw) {
+      let c = raw.replace(/^[:\-\s]+|[:\-\s.]+$/g, '');
+      const ufMatch = c.match(/^(.*?)[\s\-\/–—]+([A-Za-z]{2})$/);
+      if (ufMatch) return `${toTitleCase(ufMatch[1].trim())}/${ufMatch[2].toUpperCase()}`;
+      return toTitleCase(c);
+    }
+    function resolveSmartYear(d, m, y) {
+      const now = new Date(); const cy = now.getFullYear();
+      if (y) { let yy = parseInt(y, 10); return yy < 100 ? 2000 + yy : yy; }
+      return (new Date(cy, m - 1, d, 23, 59, 59) < now) ? cy + 1 : cy;
+    }
+    function extractTimeFromContext(str, def) {
+      if (!str) return def;
+      const clean = str.replace(/\b\d{1,2}[\/\.\-]\d{1,2}(?:[\/\.\-]\d{2,4})?\b/g, ' ');
+      const mEx = clean.match(/(?:[àa]s|volta\s+das|hor[áa]rio:?|partir\s+das|at[ée]\s+[àa]s)?\s*\b(\d{1,2})\s*(?:[:hH]\s*(\d{2})?\s*(?:r|rs|oras)?|hrs?|horas?)\b/i);
+      if (mEx) { let hh = parseInt(mEx[1], 10); if (hh >= 0 && hh <= 23) return `${String(hh).padStart(2,'0')}:${String(mEx[2]||0).padStart(2,'0')}`; }
+      if (/manh[ãa]/i.test(clean)) return '08:00';
+      if (/tarde/i.test(clean)) return '14:00';
+      if (/noite/i.test(clean)) return '20:00';
+      return def;
+    }
+
+    function parseSmartInput() {
+      const raw = document.getElementById('rawInput').value;
+      if (!raw.trim()) return showToast('Cole o texto antes de processar');
+      let cleanedText = raw.replace(/\*+/g, '').replace(/🚌\s*Para grupos e excursões[^\n\r]*/gi, '').replace(/Envie-nos a ficha acima preenchida[\s\S]*/gi, '').replace(/[—\-_]{4,}/g, '');
+      const lines = cleanedText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      let ext = { name:'', email:'não informou', phone:'', city:'', inDate:'', inTime:'14:00', outDate:'', outTime:'12:00', totalPax:0, paxBrk:'' };
+
+      const eMatch = cleanedText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+      if (eMatch) ext.email = eMatch[0].toLowerCase();
+
+      const pLabel = cleanedText.match(/telefone\s*:?\s*(\+?[\d\s().\-]{9,18})/i);
+      if (pLabel && pLabel[1].replace(/\D/g, '').length >= 10) ext.phone = formatBrazilPhone(pLabel[1]);
+      else {
+        const gPhone = cleanedText.match(/(?:\(?0?[1-9]{2}\)?[\s.\-]?)?9?[\s.\-]?\d{4}[\s.\-]?\d{4}\b/);
+        if (gPhone && gPhone[0].replace(/\D/g, '').length >= 10) ext.phone = formatBrazilPhone(gPhone[0]);
+      }
+
+      const nMatch = cleanedText.match(/(?:seu\s+nome(?:\s+completo)?\s*:|meu\s+nome\s+[ée]\s*:?)\s*([^\n\r.]+)/i);
+      if (nMatch) ext.name = toTitleCase(nMatch[1].trim());
+      else if (lines.length > 0 && !lines[0].includes('@') && !/\d{3}/.test(lines[0]) && !/:/i.test(lines[0])) ext.name = toTitleCase(lines[0]);
+
+      const cMatch = cleanedText.match(/cidade(?:\s+de)?\s*:?\s*([^\n\r.]+)/i);
+      if (cMatch) ext.city = formatCityName(cMatch[1].split(/(?:seria|para\s+um|data|telefone|e-?mail)/i)[0]);
+      else { for (const l of lines) if (/^[A-Za-zÀ-ÿ\s]+[\s\-\/–—]+[A-Za-z]{2}$/.test(l) && !/entrada|saida|saída/i.test(l)) { ext.city = formatCityName(l); break; } }
+
+      const wRange = cleanedText.match(/dia\s+(\d{1,2})\s*(?:a|at[ée]|e)\s*(\d{1,2})\s+de\s+([a-zç]+)(?:\s+de\s+(\d{4}))?/i);
+      if (wRange) {
+        const d1 = parseInt(wRange[1], 10), d2 = parseInt(wRange[2], 10), mNum = {janeiro:1,fevereiro:2,'março':3,marco:3,abril:4,maio:5,junho:6,julho:7,agosto:8,setembro:9,outubro:10,novembro:11,dezembro:12}[wRange[3].toLowerCase()]||1;
+        const yr = resolveSmartYear(d1, mNum, wRange[4]);
+        ext.inDate = `${yr}-${String(mNum).padStart(2,'0')}-${String(d1).padStart(2,'0')}`;
+        ext.outDate = `${yr}-${String(mNum).padStart(2,'0')}-${String(d2).padStart(2,'0')}`;
+      } else {
+        const pDate = (l, dHr) => {
+          const m = l.match(/(\d{1,2})[\/\.\-](\d{1,2})(?:[\/\.\-](\d{2,4}))?/); if(!m) return null;
+          return { iso: `${resolveSmartYear(parseInt(m[1],10), parseInt(m[2],10), m[3])}-${String(parseInt(m[2],10)).padStart(2,'0')}-${String(parseInt(m[1],10)).padStart(2,'0')}`, time: extractTimeFromContext(l, dHr) };
+        };
+        const pIn = pDate(lines.find(l => /entrada|chegada|check-?in/i.test(l)) || '', '14:00');
+        const pOut = pDate(lines.find(l => /sa[íi]da|check-?out/i.test(l)) || '', '12:00');
+        if (pIn) { ext.inDate = pIn.iso; ext.inTime = pIn.time; }
+        if (pOut) { ext.outDate = pOut.iso; ext.outTime = pOut.time; }
+      }
+      if (ext.inDate && ext.outDate && ext.outDate < ext.inDate) { let [y,m,d] = ext.outDate.split('-').map(Number); ext.outDate = `${y+1}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+
+      let bPax = 0, sCnt = 0, incl = /contando\s+com|incluso|incluindo|j[áa]\s+com/i.test(cleanedText);
+      const pxLine = lines.find(l => /passageiros|h[óo]spedes|pessoas/i.test(l));
+      if (pxLine) { const m = (pxLine.split(':')[1] || pxLine).match(/(\d+)/); if(m) bPax = parseInt(m[1],10); }
+      else { const m = cleanedText.match(/(\d+)\s*(?:pessoas|passageiros|h[óo]spedes)/i); if(m) bPax = parseInt(m[1],10); }
+      
+      if (!incl) { lines.forEach(l => { if (!/passageiros/i.test(l) && /motorista|guia/i.test(l)) { const ns = l.match(/\d+/g); if(ns) ns.forEach(n => sCnt += parseInt(n,10)); } }); }
+      ext.totalPax = bPax + sCnt;
+      if (bPax > 0 && sCnt > 0) ext.paxBrk = `(${bPax} + ${sCnt} mot/guia)`; else if (incl && bPax > 0) ext.paxBrk = `(mot/guia já inclusos)`;
+
+      if (ext.name) document.getElementById('guestName').value = ext.name;
+      if (ext.phone) document.getElementById('guestPhone').value = ext.phone;
+      if (ext.city) document.getElementById('guestCity').value = ext.city;
+      document.getElementById('guestEmail').value = ext.email;
+      if (ext.totalPax > 0) document.getElementById('guestCount').value = ext.totalPax;
+      document.getElementById('paxBreakdown').innerText = ext.paxBrk;
+      if (ext.inDate) document.getElementById('checkinDate').value = ext.inDate;
+      if (ext.inTime) document.getElementById('checkinTime').value = ext.inTime;
+      if (ext.outDate) document.getElementById('checkoutDate').value = ext.outDate;
+      if (ext.outTime) document.getElementById('checkoutTime').value = ext.outTime;
+      
+      calculateStay(); showToast('Ficha Extraída!');
+    }
+
+    function initDates() {
+      const today = new Date(); const inDate = new Date(today); inDate.setDate(today.getDate() + 14);
+      const outDate = new Date(inDate); outDate.setDate(inDate.getDate() + 2);
+      document.getElementById('checkinDate').value = inDate.toISOString().split('T')[0];
+      document.getElementById('checkoutDate').value = outDate.toISOString().split('T')[0];
+      document.getElementById('checkinTime').value = '14:00'; document.getElementById('checkoutTime').value = '12:00';
+      calculateStay();
+    }
+    function setPricingMode(mode) {
+      pricingMode = mode;
+      document.getElementById('modePessoa').classList.toggle('active', mode === 'pessoa');
+      document.getElementById('modeQuarto').classList.toggle('active', mode === 'quarto');
+      updatePreview();
+    }
+    function initRoomsPriceList() {
+      const c = document.getElementById('roomsPriceList'); c.innerHTML = '';
+      appData.config.rooms.forEach(r => {
+        c.innerHTML += `<div class="room-item"><span class="room-item-name">${r.name}</span><div class="price-input-wrap"><span>R$</span><input type="number" step="0.01" id="price_${r.id}" value="${r.defaultPrice.toFixed(2)}" oninput="updatePreview()"></div></div>`;
+      });
+    }
+    function getStayMetrics() {
+      const dIn = document.getElementById('checkinDate').value, tIn = document.getElementById('checkinTime').value || '14:00';
+      const dOut = document.getElementById('checkoutDate').value, tOut = document.getElementById('checkoutTime').value || '12:00';
+      if (!dIn || !dOut) return { regularDiarias: 0, earlyCheckin: false, lateCheckout: false };
+      const d = Math.max(0, Math.round((new Date(dOut + 'T12:00:00') - new Date(dIn + 'T12:00:00')) / 86400000));
+      const [hIn, mIn] = tIn.split(':').map(Number); const [hOut, mOut] = tOut.split(':').map(Number);
+      const iMin = hIn * 60 + mIn, oMin = hOut * 60 + mOut;
+      let eIn = false, lOut = false, xIn = 0, xOut = 0;
+      if (iMin < 14 * 60) { if (iMin >= 7 * 60) eIn = true; else xIn = 1; }
+      if (oMin > 12 * 60) { if (oMin <= 18 * 60) lOut = true; else xOut = 1; }
+      return { regularDiarias: d + xIn + xOut, earlyCheckin: eIn, lateCheckout: lOut, tIn, tOut, dIn, dOut };
+    }
+    function calculateStay() {
+      const m = getStayMetrics(); 
+      let totalDiarias = m.regularDiarias + (m.earlyCheckin ? 0.5 : 0) + (m.lateCheckout ? 0.5 : 0);
+      let diariasStr = totalDiarias % 1 === 0 ? String(totalDiarias).padStart(2, '0') : String(totalDiarias).replace('.', ',');
+      let p = [`${diariasStr} diárias totais`];
+      if (m.earlyCheckin) p.push(`(Inclui Early Check-in)`);
+      if (m.lateCheckout) p.push(`(Inclui Late Check-out)`);
+      document.getElementById('staySummary').innerHTML = `<span>Resumo:</span><strong>${p.join(' ')}</strong>`;
+      updatePreview();
+    }
+    function getFormattedDateDetails(ds) {
+      if (!ds) return { formatted: '--/--/----', weekday: '' };
+      const [y, m, d] = ds.split('-'); const dt = new Date(y, m - 1, d, 12, 0, 0);
+      const w = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+      return { formatted: `${d}/${m}/${y}`, weekday: w[dt.getDay()] };
+    }
+
+    function generateMarkdownText() {
+      const name = document.getElementById('guestName').value.trim() || 'Hóspede', city = document.getElementById('guestCity').value.trim() || 'SP';
+      const phone = document.getElementById('guestPhone').value.trim() || 'não informou', email = document.getElementById('guestEmail').value.trim() || 'não informou';
+      const guests = document.getElementById('guestCount').value.trim() || '0';
+      const m = getStayMetrics(), inDetails = getFormattedDateDetails(m.dIn), outDetails = getFormattedDateDetails(m.dOut);
+      const isPerRoom = pricingMode === 'quarto', sfx = isPerRoom ? 'por quarto / diária.' : 'por pessoa.';
+      const hType = isPerRoom ? '(diária por quarto)' : '(diária por pessoa)';
+      
+      let totalDiarias = m.regularDiarias + (m.earlyCheckin ? 0.5 : 0) + (m.lateCheckout ? 0.5 : 0);
+      let diariasStr = totalDiarias % 1 === 0 ? String(totalDiarias).padStart(2, '0') : String(totalDiarias).replace('.', ',');
+
+      const rLines = appData.config.rooms.map(r => {
+        const el = document.getElementById(`price_${r.id}`);
+        return `*${r.name}:* _R$ ${(el ? parseFloat(el.value) || 0 : r.defaultPrice).toFixed(2).replace('.', ',')}_ ${sfx}`;
+      });
+      let md = `📅 *Orçamento para o grupo de ${name} - ${city}*\n📍 _Chegada:_ *${inDetails.formatted} a partir das ${m.tIn} (${inDetails.weekday})*\n📍 _Saída:_ *${outDetails.formatted} até às ${m.tOut} (${outDetails.weekday})*\n📍 _Número de diárias:_ *${diariasStr} diárias*.\n`;
+      if (m.earlyCheckin) md += `➕ _Adicional:_ Early Check-in a partir das ${m.tIn} com café da manhã (+ 1/2 diária).\n`;
+      if (m.lateCheckout) md += `➕ _Adicional:_ Late Check-out até às ${m.tOut} (+ 1/2 diária).\n`;
+      md += `👥 _Quantidade de hóspedes:_ *${guests} pessoas*\n\n_Opções de acomodações_ ${hType}:\n${rLines.join('\n')}\n\n📧 _E-mail:_ ${email}\n📞 _Telefone:_ ${phone}\n\n${appData.config.parkingText}\n\n📌 Este orçamento é válido até *${document.getElementById('validityDate').value.trim() || '30 de outubro de 2026'}*.\n\nCaso tenha alguma dúvida ou queira ajustar algo, será um prazer ajudar!`;
+      return md;
+    }
+
+    function updatePreview() {
+      const md = generateMarkdownText();
+      document.getElementById('markdownPreview').innerHTML = renderWhatsAppMarkdown(md);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('visible');
+      setTimeout(() => t.classList.remove('visible'), 2400);
+    }
+    function toggleTheme() {
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      document.getElementById('themeLabel').innerText = isDark ? 'Escuro' : 'Claro';
+    }
+    function switchTab(tabId) {
+      document.querySelectorAll('.viewport').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabId).classList.add('active');
+      document.querySelector(`.nav-tab[data-tab="${tabId}"]`).classList.add('active');
+      if (tabId === 'orcamentos') renderOrcamentosList();
+      if (tabId === 'clientes') renderClientesList();
+    }
+    function clipboardCopy(text, msg) {
+      navigator.clipboard.writeText(text).then(() => showToast(msg)).catch(() => {
+        const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); showToast(msg);
+      });
+    }
+
+    // Modal Changelog
+    function openChangelogModal() { document.getElementById('changelogModal').classList.add('open'); }
+    function closeChangelogModal() { document.getElementById('changelogModal').classList.remove('open'); }
+
+    function copyPresentation() { clipboardCopy(appData.config.presentationText, 'Apresentação copiada!'); }
+    function generateUniqueId() {
+      const s = String(appData.nextSeq).padStart(3, '0'); appData.nextSeq++; localStorage.setItem('orc_next_seq', appData.nextSeq);
+      return `#ORC-${new Date().getFullYear()}-${s}`;
+    }
+
+    function copyAndSave() {
+      const md = generateMarkdownText(), phone = document.getElementById('guestPhone').value.trim() || 'não informado', orcId = activeOrcamentoId || generateUniqueId();
+      const orcRecord = {
+        id: orcId, dateCreated: new Date().toISOString(), guestName: document.getElementById('guestName').value.trim() || 'Hóspede',
+        guestPhone: phone, guestCity: document.getElementById('guestCity').value.trim(), guestEmail: document.getElementById('guestEmail').value.trim(),
+        guestCount: document.getElementById('guestCount').value.trim(), checkinDate: document.getElementById('checkinDate').value, checkinTime: document.getElementById('checkinTime').value,
+        checkoutDate: document.getElementById('checkoutDate').value, checkoutTime: document.getElementById('checkoutTime').value, pricingType: pricingMode,
+        prices: appData.config.rooms.reduce((acc, r) => { const el = document.getElementById(`price_${r.id}`); acc[r.id] = el ? parseFloat(el.value) || 0 : r.defaultPrice; return acc; }, {}),
+        validity: document.getElementById('validityDate').value.trim(), markdown: md
+      };
+      const idx = appData.orcamentos.findIndex(o => o.id === orcId);
+      if (idx >= 0) appData.orcamentos[idx] = orcRecord; else appData.orcamentos.unshift(orcRecord);
+      localStorage.setItem('orc_orcamentos', JSON.stringify(appData.orcamentos));
+
+      if (phone !== 'não informado') {
+        if (!appData.clientes[phone]) appData.clientes[phone] = { phone, orcamentos: [] };
+        const c = appData.clientes[phone];
+        c.name = orcRecord.guestName; c.city = orcRecord.guestCity; c.email = orcRecord.guestEmail;
+        if (!c.orcamentos.includes(orcId)) c.orcamentos.push(orcId);
+        localStorage.setItem('orc_clientes', JSON.stringify(appData.clientes));
+      }
+      activeOrcamentoId = orcId; document.getElementById('currentOrcId').innerText = orcId;
+      clipboardCopy(md, `Orçamento ${orcId} salvo e copiado!`);
+    }
+
+    // LISTA DE ORÇAMENTOS E IMPRESSÃO (PDF)
+    function renderOrcamentosList() {
+      const container = document.getElementById('orcamentosList'), q = document.getElementById('searchOrc').value.toLowerCase();
+      container.innerHTML = '';
+      const list = appData.orcamentos.filter(o => o.id.toLowerCase().includes(q) || o.guestName.toLowerCase().includes(q) || o.guestPhone.toLowerCase().includes(q) || (o.guestCity && o.guestCity.toLowerCase().includes(q)));
+      if (!list.length) return container.innerHTML = `<div class="panel" style="text-align:center; color:var(--text-muted);">Nenhum orçamento registrado.</div>`;
+
+      list.forEach(o => {
+        const dIn = o.checkinDate ? o.checkinDate.split('-').reverse().join('/') : '';
+        const dOut = o.checkoutDate ? o.checkoutDate.split('-').reverse().join('/') : '';
+        container.innerHTML += `
+          <div class="record-card">
+            <div class="record-info" onclick="openPreviewOrcModal('${o.id}')" title="Clique para visualizar">
+              <h4><span class="badge badge-accent">${o.id}</span> ${o.guestName}</h4>
+              <div class="record-meta"><span>${o.guestCity || 'Sem cidade'}</span><span>•</span><span>${o.guestCount || '0'} p.</span><span>•</span><span>${dIn} a ${dOut}</span></div>
+            </div>
+            <div class="record-actions">
+              <button class="btn btn-secondary" onclick="loadOrcamento('${o.id}')">Editar</button>
+              <button class="btn btn-danger-ghost" onclick="deleteOrcamento('${o.id}')"><svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+            </div>
+          </div>`;
+      });
+    }
+
+    function openPreviewOrcModal(id) {
+      const orc = appData.orcamentos.find(o => o.id === id);
+      if (!orc) return;
+      document.getElementById('previewOrcModalTitle').innerHTML = `<svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Prévia: ${orc.id}`;
+      document.getElementById('previewOrcModalContent').innerHTML = renderWhatsAppMarkdown(orc.markdown);
+      document.getElementById('previewOrcCopyBtn').onclick = () => clipboardCopy(orc.markdown, 'Orçamento copiado!');
+      document.getElementById('previewOrcPrintBtn').onclick = () => printOrcamentoPDF(id);
+      document.getElementById('previewOrcModal').classList.add('open');
+    }
+    
+    function closePreviewOrcModal() { document.getElementById('previewOrcModal').classList.remove('open'); }
+
+    function printOrcamentoPDF(id) {
+      const orc = appData.orcamentos.find(o => o.id === id);
+      if (!orc) return;
+
+      const dIn = orc.checkinDate ? orc.checkinDate.split('-').reverse().join('/') : '';
+      const dOut = orc.checkoutDate ? orc.checkoutDate.split('-').reverse().join('/') : '';
+      const isPerRoom = orc.pricingType === 'quarto';
+      const suffix = isPerRoom ? 'por quarto / diária' : 'por pessoa';
+
+      let roomsHtml = '';
+      appData.config.rooms.forEach(r => {
+         const price = (orc.prices && orc.prices[r.id]) ? orc.prices[r.id] : r.defaultPrice;
+         roomsHtml += `<tr>
+            <td style="padding: 10px 4px; border-bottom: 1px solid #f1f5f9; font-size: 14px;"><strong>${r.name}</strong></td>
+            <td style="padding: 10px 4px; border-bottom: 1px solid #f1f5f9; text-align:right; font-size: 14px;">R$ ${price.toFixed(2).replace('.', ',')} <span style="color:#64748b; font-size: 12px; margin-left:4px;">${suffix}</span></td>
+         </tr>`;
+      });
+
+      const cleanParkingText = appData.config.parkingText.replace(/_/g, '').replace(/\*/g, '');
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>${orc.id} - ${orc.guestName}</title>
+            <style>
+              @page { size: A4 portrait; margin: 15mm 20mm; }
+              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #1e293b; line-height: 1.5; font-size: 14px; margin: 0; padding: 0; background: #fff; }
+              .header { border-bottom: 3px solid #0284c7; padding-bottom: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: flex-end; }
+              .header h1 { margin: 0; color: #0284c7; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+              .header .meta { text-align: right; color: #64748b; font-size: 12px; }
+              .section-title { font-size: 14px; font-weight: 700; color: #0284c7; border-bottom: 1px solid #e2e8f0; margin: 25px 0 12px; padding-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+              .info-grid { display: table; width: 100%; margin-bottom: 15px; }
+              .info-row { display: table-row; }
+              .info-label { display: table-cell; padding: 6px 15px 6px 0; font-weight: 600; color: #475569; width: 35%; }
+              .info-value { display: table-cell; padding: 6px 0; font-weight: 500; }
+              table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+              .text-muted { color: #475569; font-size: 13px; margin-bottom: 10px; }
+              .footer { margin-top: 50px; padding-top: 15px; border-top: 1px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 11px; page-break-inside: avoid; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div>
+                <h1>Guarujá Hostel</h1>
+                <div style="color: #64748b; margin-top: 4px; font-size: 13px; font-weight: 500;">Proposta Comercial de Hospedagem para Grupos</div>
+              </div>
+              <div class="meta">
+                <strong>Orçamento nº:</strong> ${orc.id}<br>
+                <strong>Emissão:</strong> ${new Date(orc.dateCreated).toLocaleDateString('pt-BR')}
+              </div>
+            </div>
+
+            <div class="section-title">Dados do Solicitante</div>
+            <div class="info-grid">
+              <div class="info-row"><div class="info-label">Nome / Responsável:</div><div class="info-value">${orc.guestName}</div></div>
+              <div class="info-row"><div class="info-label">Telefone / WhatsApp:</div><div class="info-value">${orc.guestPhone}</div></div>
+              <div class="info-row"><div class="info-label">Cidade de Origem:</div><div class="info-value">${orc.guestCity || 'Não informada'}</div></div>
+              <div class="info-row"><div class="info-label">E-mail de Contato:</div><div class="info-value">${orc.guestEmail}</div></div>
+            </div>
+
+            <div class="section-title">Detalhes da Reserva</div>
+            <div class="info-grid">
+              <div class="info-row"><div class="info-label">Check-in (Entrada):</div><div class="info-value">${dIn} a partir das ${orc.checkinTime}</div></div>
+              <div class="info-row"><div class="info-label">Check-out (Saída):</div><div class="info-value">${dOut} até às ${orc.checkoutTime}</div></div>
+              <div class="info-row"><div class="info-label">Total de Hóspedes:</div><div class="info-value">${orc.guestCount} pessoas</div></div>
+            </div>
+
+            <div class="section-title">Tabela de Tarifas</div>
+            <table>
+              <tbody>
+                ${roomsHtml}
+              </tbody>
+            </table>
+
+            <div class="section-title">Informações Importantes</div>
+            <p class="text-muted">${cleanParkingText}</p>
+            <p class="text-muted">
+              <strong>Validade:</strong> Este orçamento é válido até <strong>${orc.validity}</strong>. As tarifas e a disponibilidade das acomodações estão sujeitas a alteração após este prazo.
+            </p>
+
+            <div class="footer">
+              Guarujá Hostel<br>
+              Praia da Enseada, Guarujá - SP<br>
+              Documento gerado automaticamente pelo Sistema de Orçamentos
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => { printWindow.print(); }, 250);
+    }
+
+    function loadOrcamento(id) {
+      const orc = appData.orcamentos.find(o => o.id === id); if (!orc) return;
+      activeOrcamentoId = orc.id; document.getElementById('currentOrcId').innerText = orc.id;
+      ['guestName', 'guestPhone', 'guestCity', 'guestEmail', 'guestCount', 'checkinDate', 'checkinTime', 'checkoutDate', 'checkoutTime', 'validityDate'].forEach(k => { if (orc[k] !== undefined) document.getElementById(k).value = orc[k]; });
+      setPricingMode(orc.pricingType || 'pessoa');
+      if (orc.prices) Object.entries(orc.prices).forEach(([rId, val]) => { const el = document.getElementById(`price_${rId}`); if (el) el.value = Number(val).toFixed(2); });
+      calculateStay(); switchTab('gerador'); showToast(`Editando ${orc.id}`);
+    }
+
+    function deleteOrcamento(id) {
+      if (!confirm(`Remover orçamento ${id}?`)) return;
+      appData.orcamentos = appData.orcamentos.filter(o => o.id !== id);
+      localStorage.setItem('orc_orcamentos', JSON.stringify(appData.orcamentos)); renderOrcamentosList();
+    }
+
+    function renderClientesList() {
+      const container = document.getElementById('clientesList'), q = document.getElementById('searchClient').value.toLowerCase();
+      container.innerHTML = '';
+      const list = Object.values(appData.clientes).filter(c => c.name.toLowerCase().includes(q) || c.phone.toLowerCase().includes(q) || (c.city && c.city.toLowerCase().includes(q)));
+      if (!list.length) return container.innerHTML = `<div class="panel" style="text-align:center; color:var(--text-muted);">Nenhum cliente encontrado.</div>`;
+
+      list.forEach(c => {
+        container.innerHTML += `
+          <div class="record-card">
+            <div class="record-info" style="cursor:default;">
+              <h4>${c.name} <span class="badge">${c.orcamentos.length} orç.</span></h4>
+              <div class="record-meta"><span>${c.phone}</span><span>•</span><span>${c.city || 'Sem cidade'}</span><span>•</span><span>${c.email || 'Sem e-mail'}</span></div>
+            </div>
+            <div class="record-actions">
+              <button class="btn btn-secondary" onclick="openClientModal('${c.phone.replace(/'/g, "\\'")}')">Editar</button>
+              <button class="btn btn-danger-ghost" onclick="deleteClient('${c.phone.replace(/'/g, "\\'")}')" title="Excluir Cliente">
+                <svg class="icon" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </div>
+          </div>`;
+      });
+    }
+
+    function deleteClient(phone) {
+      if (!confirm(`Tem certeza que deseja excluir o cadastro deste cliente?\n(Os orçamentos associados a ele continuarão existindo na aba Orçamentos).`)) return;
+      delete appData.clientes[phone];
+      localStorage.setItem('orc_clientes', JSON.stringify(appData.clientes));
+      renderClientesList();
+      showToast('Cliente excluído');
+    }
+
+    function exportClientsCSV() {
+      let csv = "Telefone,Nome,Cidade,Email,Orcamentos\n";
+      Object.values(appData.clientes).forEach(c => {
+        csv += `"${c.phone}","${c.name}","${c.city || ''}","${c.email || ''}","${c.orcamentos.join(' ')}"\n`;
+      });
+      const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = `clientes_guaruja_hostel_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+
+    function openClientModal(phone) {
+      const c = appData.clientes[phone]; if (!c) return;
+      document.getElementById('editClientOldPhone').value = c.phone; document.getElementById('editClientPhone').value = c.phone;
+      document.getElementById('editClientName').value = c.name || ''; document.getElementById('editClientCity').value = c.city || '';
+      document.getElementById('editClientEmail').value = c.email || ''; document.getElementById('clientEditModal').classList.add('open');
+    }
+    function closeClientModal() { document.getElementById('clientEditModal').classList.remove('open'); }
+    function saveClientEdit() {
+      const oldPhone = document.getElementById('editClientOldPhone').value, newPhone = document.getElementById('editClientPhone').value.trim();
+      if (!newPhone) return alert('Informe o telefone.');
+      if (newPhone !== oldPhone) { appData.clientes[newPhone] = appData.clientes[oldPhone]; delete appData.clientes[oldPhone]; }
+      appData.clientes[newPhone].phone = newPhone; appData.clientes[newPhone].name = document.getElementById('editClientName').value.trim();
+      appData.clientes[newPhone].city = document.getElementById('editClientCity').value.trim(); appData.clientes[newPhone].email = document.getElementById('editClientEmail').value.trim();
+      localStorage.setItem('orc_clientes', JSON.stringify(appData.clientes)); closeClientModal(); renderClientesList(); showToast('Cliente atualizado');
+    }
+
+    function renderConfigRooms() {
+      const c = document.getElementById('configRoomsList'); c.innerHTML = '';
+      appData.config.rooms.forEach((r, idx) => {
+        c.innerHTML += `<div class="room-item"><input type="text" value="${r.name}" style="flex:1;" onchange="updateRoom(${idx}, 'name', this.value)"><div class="price-input-wrap"><span>R$</span><input type="number" step="0.01" value="${r.defaultPrice.toFixed(2)}" onchange="updateRoom(${idx}, 'defaultPrice', this.value)"></div><button class="btn btn-danger-ghost" onclick="deleteRoom(${idx})"><svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>`;
+      });
+    }
+    function updateRoom(idx, prop, val) { appData.config.rooms[idx][prop] = prop === 'defaultPrice' ? parseFloat(val) || 0 : val.trim(); localStorage.setItem('orc_config', JSON.stringify(appData.config)); initRoomsPriceList(); updatePreview(); }
+    function addNewRoomCategory() {
+      const name = document.getElementById('newRoomName').value.trim(), price = parseFloat(document.getElementById('newRoomDefaultPrice').value) || 0;
+      if (!name) return;
+      appData.config.rooms.push({ id: name.toLowerCase().replace(/[^a-z0-9]/g, '_'), name, defaultPrice: price }); localStorage.setItem('orc_config', JSON.stringify(appData.config));
+      document.getElementById('newRoomName').value = ''; document.getElementById('newRoomDefaultPrice').value = ''; renderConfigRooms(); initRoomsPriceList(); updatePreview(); showToast('Adicionado');
+    }
+    function deleteRoom(idx) { if (appData.config.rooms.length <= 1) return; appData.config.rooms.splice(idx, 1); localStorage.setItem('orc_config', JSON.stringify(appData.config)); renderConfigRooms(); initRoomsPriceList(); updatePreview(); }
+    function savePresentationConfig() { appData.config.presentationText = document.getElementById('presentationTextConfig').value.trim(); localStorage.setItem('orc_config', JSON.stringify(appData.config)); showToast('Salvo!'); }
+    function saveParkingConfig() { appData.config.parkingText = document.getElementById('parkingTextConfig').value.trim(); localStorage.setItem('orc_config', JSON.stringify(appData.config)); updatePreview(); showToast('Salvo!'); }
+    function exportDataBackup() { const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2)); a.download = `guaruja_hostel_backup_${new Date().toISOString().split('T')[0]}.json`; a.click(); }
+    function importDataBackup(e) {
+      const file = e.target.files[0]; if (!file) return; const reader = new FileReader();
+      reader.onload = evt => { try { const imported = JSON.parse(evt.target.result); if (imported.config && imported.orcamentos) { localStorage.setItem('orc_config', JSON.stringify(imported.config)); localStorage.setItem('orc_orcamentos', JSON.stringify(imported.orcamentos)); localStorage.setItem('orc_clientes', JSON.stringify(imported.clientes || {})); localStorage.setItem('orc_next_seq', imported.nextSeq || 1); location.reload(); } } catch (err) { alert('Arquivo JSON inválido.'); } };
+      reader.readAsText(file);
+    }
+  </script>
+</body>
+</html>
